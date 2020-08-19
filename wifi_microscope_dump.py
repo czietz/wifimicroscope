@@ -39,7 +39,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
 	# Send commands like naInit_Re() would do
 	s.sendto(b"JHCMD\x10\x00", (HOST, SPORT))
 	s.sendto(b"JHCMD\x20\x00", (HOST, SPORT))
-	# Start data command?
+	# Heartbeat command, starts the transmission of data from the scope
 	s.sendto(b"JHCMD\xd0\x01", (HOST, SPORT))
 	s.sendto(b"JHCMD\xd0\x01", (HOST, SPORT))
 
@@ -63,6 +63,9 @@ with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
 							o.close()
 						# Only save 100 frames to avoid filling up the disk
 						o = open("frame_%d.jpg" % (framecount%100), "wb")
+						# Send a heartbeat every 50 frames (arbitrary number) to keep data flowing
+						if framecount%50 == 0:
+							s.sendto(b"JHCMD\xd0\x01", (HOST, SPORT))
 					o.write(data[8:])
 			except:
 				time.sleep(0.01)
